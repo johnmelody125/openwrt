@@ -1,0 +1,35 @@
+diff -uNr a/drivers/usb/serial/option.c b/drivers/usb/serial/option.c
+--- a/drivers/usb/serial/option.c	2023-06-03 08:15:52.560118317 -0400
++++ b/drivers/usb/serial/option.c	2023-06-03 08:14:30.224891520 -0400
+@@ -402,6 +402,7 @@
+  * Mobidata, etc sell under their own brand names.
+  */
+ #define LONGCHEER_VENDOR_ID			0x1c9e
++#define LONGSUNG_U9300_PRODUCT_ID		0x9b3c
+ 
+ /* 4G Systems products */
+ /* This one was sold as the VW and Skoda "Carstick LTE" */
+@@ -2008,6 +2009,8 @@
+ 	  .driver_info = NCTRL(1) | NCTRL(2) | RSVD(3) },
+ 	{USB_DEVICE(LONGCHEER_VENDOR_ID, FUJISOFT_PRODUCT_FS040U),
+ 	 .driver_info = RSVD(3)},
++	{ USB_DEVICE_INTERFACE_CLASS(LONGCHEER_VENDOR_ID, LONGSUNG_U9300_PRODUCT_ID, 0xff),
++   	 .driver_info = RSVD(4) },
+ 	{ USB_DEVICE_INTERFACE_CLASS(LONGCHEER_VENDOR_ID, SPEEDUP_PRODUCT_SU9800, 0xff) },
+ 	{ USB_DEVICE_INTERFACE_CLASS(LONGCHEER_VENDOR_ID, 0x9801, 0xff),
+ 	  .driver_info = RSVD(3) },
+@@ -2299,6 +2302,14 @@
+ 	if (iface_desc->bInterfaceClass == USB_CLASS_MASS_STORAGE)
+ 		return -ENODEV;
+ 
++	if (serial->dev->descriptor.idVendor == LONGCHEER_VENDOR_ID &&
++		serial->dev->descriptor.idProduct == LONGSUNG_U9300_PRODUCT_ID &&
++		serial->interface->cur_altsetting->desc.bInterfaceNumber == 4) {
++			printk("[%s][%d]Discover U9300C bInterfaceNumber %d, ignore ... \n",
++				__func__, __LINE__, iface_desc->bInterfaceNumber);
++			return -ENODEV;
++	}
++
+ 	/*
+ 	 * Don't bind reserved interfaces (like network ones) which often have
+ 	 * the same class/subclass/protocol as the serial interfaces.  Look at
